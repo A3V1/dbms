@@ -3,7 +3,7 @@ import { CheckCircle, FileText } from "lucide-react"
 interface ActivityItemProps {
   message: string
   time: string
-  type: "assignment" | "meeting" | "message"
+  type: "assignment" | "meeting"
 }
 
 export default function ActivityItem({ message, time, type }: ActivityItemProps) {
@@ -31,12 +31,12 @@ export default function ActivityItem({ message, time, type }: ActivityItemProps)
   }
 
   return (
-    <div className="flex items-start gap-3">
-      {getIcon()}
+    <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
       <div>
         <p className="font-medium">{message}</p>
         <p className="text-sm text-gray-500">{time}</p>
       </div>
+      <span className="text-sm capitalize text-gray-500">{type}</span>
     </div>
   )
 }
