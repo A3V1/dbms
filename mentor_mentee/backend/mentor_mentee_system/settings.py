@@ -41,13 +41,10 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_filters',
     'drf_yasg',
+    'rest_framework_simplejwt',
     
     # Local apps
-    'mentor_mentee_system.apps.users',
-    'mentor_mentee_system.apps.meetings',
-    'mentor_mentee_system.apps.achievements',
-    'mentor_mentee_system.apps.communication',
-    'mentor_mentee_system.apps.activity_logs',
+    'mentor_mentee_system',
 ]
 
 MIDDLEWARE = [
@@ -171,9 +168,6 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
-    ),
 }
 
 # JWT settings
@@ -181,20 +175,11 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': True,
-    'BLACKLIST_AFTER_ROTATION': True,
-    'UPDATE_LAST_LOGIN': False,
-    'ALGORITHM': 'HS256',
-    'SIGNING_KEY': SECRET_KEY,
-    'VERIFYING_KEY': None,
     'AUTH_HEADER_TYPES': ('Bearer',),
-    'USER_ID_FIELD': 'id',
-    'USER_ID_CLAIM': 'user_id',
-    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
-    'TOKEN_TYPE_CLAIM': 'token_type',
 }
 
 # Add custom user model
-AUTH_USER_MODEL = 'users.User'
+AUTH_USER_MODEL = 'mentor_mentee_system.User'
 
 # Add these settings
 AUTHENTICATION_BACKENDS = [

@@ -1,22 +1,25 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { authAPI } from '@/lib/api';
+import Cookies from 'js-cookie';
+import { authAPI } from '@/services/api';
+import { jwtDecode } from 'jwt-decode';
 
 interface User {
   id: number;
   email: string;
+  role: 'mentor' | 'mentee';
   first_name: string;
   last_name: string;
-  role: 'mentor' | 'mentee' | 'admin';
 }
 
 interface AuthContextType {
   user: User | null;
+  loading: boolean;
+  error: string | null;
   login: (email: string, password: string) => Promise<void>;
-  logout: () => Promise<void>;
-  isLoading: boolean;
+  logout: () => void;
   isAuthenticated: boolean;
 }
 
@@ -24,83 +27,94 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
-    const initAuth = async () => {
+    verifyAuth();
+  }, []);
+
+  const verifyAuth = async () => {
+    try {
+      const token = Cookies.get('token');
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
       try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          setIsLoading(false);
+        const decoded = jwtDecode(token);
+        const currentTime = Date.now() / 1000;
+        
+        if (decoded.exp && decoded.exp < currentTime) {
+          Cookies.remove('token');
+          setLoading(false);
           return;
         }
 
-        const userData = await authAPI.getCurrentUser();
-        setUser(userData);
-      } catch (error) {
-        console.error('Auth initialization failed:', error);
-        await authAPI.logout();
-      } finally {
-        setIsLoading(false);
+        // Get user data from token or make API call
+        const response = await authAPI.verifyToken();
+        setUser(response.user);
+      } catch (err) {
+        console.error('Token decode error:', err);
+        Cookies.remove('token');
       }
-    };
-
-    initAuth();
-  }, []);
+    } catch (err) {
+      console.error('Auth verification error:', err);
+      Cookies.remove('token');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const login = async (email: string, password: string) => {
     try {
-      setIsLoading(true);
-      const { token, user } = await authAPI.login(email, password);
-
-      // Store token
-      localStorage.setItem('token', token);
-      document.cookie = `token=${token}; path=/`;
+      setError(null);
+      const response = await authAPI.login(email, password);
       
-      // Update state
-      setUser(user);
-
-      // Redirect based on role
-      router.push(`/${user.role}/dashboard`);
-    } catch (error: any) {
-      console.error('Login failed:', error);
-      throw new Error(error.response?.data?.message || 'Login failed');
-    } finally {
-      setIsLoading(false);
+      if (response.token && response.user) {
+        Cookies.set('token', response.token);
+        setUser(response.user);
+        
+        // Redirect based on user role
+        if (response.user.role === 'mentor') {
+          router.push('/dashboard/mentor');
+        } else {
+          router.push('/dashboard/mentee');
+        }
+      } else {
+        throw new Error('Invalid response format');
+      }
+    } catch (err: any) {
+      console.error('Login error:', err);
+      setError(err.response?.data?.detail || err.message || 'Login failed');
+      throw err;
     }
   };
 
-  const logout = async () => {
-    setIsLoading(true);
-    try {
-      await authAPI.logout();
-      setUser(null);
-      router.push('/login');
-    } finally {
-      setIsLoading(false);
-    }
+  const logout = () => {
+    Cookies.remove('token');
+    setUser(null);
+    router.push('/login');
   };
 
-  return (
-    <AuthContext.Provider 
-      value={{ 
-        user, 
-        login, 
-        logout, 
-        isLoading,
-        isAuthenticated: !!user 
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
+  const value = {
+    user,
+    loading,
+    error,
+    login,
+    logout,
+    isAuthenticated: !!user,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-export const useAuth = () => {
+export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-}; 
+} 

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { getRoleFromToken } from '@/lib/jwt';
+import { jwtDecode } from 'jwt-decode';
 
 const protectedRoutes = {
   mentor: ['/mentor'],
@@ -11,59 +11,45 @@ const protectedRoutes = {
 const publicRoutes = ['/login', '/signup', '/', '/unauthorized'];
 
 export function middleware(request: NextRequest) {
-  const token = request.cookies.get('token')?.value;
-  const path = request.nextUrl.pathname;
-  
-  console.log('Middleware - Path:', path);
-  console.log('Middleware - Token exists:', !!token);
+  const { pathname } = request.nextUrl;
+  console.log('Middleware - Path:', pathname);
 
-  // Handle root path
-  if (path === '/') {
-    if (!token) {
-      return NextResponse.redirect(new URL('/login', request.url));
-    }
-    try {
-      const userRole = getRoleFromToken(token);
-      return NextResponse.redirect(new URL(`/${userRole}/dashboard`, request.url));
-    } catch (error) {
-      return NextResponse.redirect(new URL('/login', request.url));
-    }
-  }
-
-  // Public routes
-  if (publicRoutes.includes(path)) {
-    // If user is authenticated and tries to access login/signup, redirect to their dashboard
-    if (token && (path === '/login' || path === '/signup')) {
-      try {
-        const userRole = getRoleFromToken(token);
-        return NextResponse.redirect(new URL(`/${userRole}/dashboard`, request.url));
-      } catch (error) {
-        // If token is invalid, allow access to login/signup
-        return NextResponse.next();
-      }
-    }
+  // Allow public paths
+  if (publicRoutes.includes(pathname)) {
     return NextResponse.next();
-  }
-
-  // Redirect unauthenticated users
-  if (!token) {
-    console.log('Middleware - Redirecting to login');
-    return NextResponse.redirect(new URL('/login', request.url));
   }
 
   try {
-    // Role-based access control
-    const userRole = getRoleFromToken(token);
-    console.log('Extracted user role:', userRole);
-    const allowedPaths = protectedRoutes[userRole] || [];
-    console.log('Allowed paths for user role:', allowedPaths);
-    
-    if (!allowedPaths.some(p => path.startsWith(p))) {
-      console.log('User does not have access to this path:', path);
-      return NextResponse.redirect(new URL('/unauthorized', request.url));
+    // Get token from cookies
+    const token = request.cookies.get('token')?.value;
+    console.log('Middleware - Token exists:', !!token);
+
+    if (!token) {
+      return NextResponse.redirect(new URL('/login', request.url));
     }
 
-    return NextResponse.next();
+    try {
+      // Decode token
+      const decoded = jwtDecode(token);
+      const currentTime = Date.now() / 1000;
+
+      // Check if token is expired
+      if (decoded.exp && decoded.exp < currentTime) {
+        console.log('Token expired');
+        const response = NextResponse.redirect(new URL('/login', request.url));
+        response.cookies.delete('token');
+        return response;
+      }
+
+      // Token is valid, allow request
+      return NextResponse.next();
+    } catch (error) {
+      console.error('Error decoding token:', error);
+      // Invalid token, redirect to login
+      const response = NextResponse.redirect(new URL('/login', request.url));
+      response.cookies.delete('token');
+      return response;
+    }
   } catch (error) {
     console.error('Error in middleware:', error);
     return NextResponse.redirect(new URL('/login', request.url));
@@ -73,12 +59,12 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
+     * Match all request paths except:
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
+     * - public files (public directory)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    '/((?!_next/static|_next/image|favicon.ico|public).*)',
   ],
 }; 

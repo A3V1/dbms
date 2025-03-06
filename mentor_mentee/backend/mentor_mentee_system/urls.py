@@ -20,6 +20,9 @@ from django.http import JsonResponse
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+from rest_framework_simplejwt.views import TokenRefreshView
+from .views import RegisterView, UserViewSet, CustomTokenObtainPairView
+from rest_framework.routers import DefaultRouter
 
 # Add a simple root view
 def api_root(request):
@@ -47,6 +50,9 @@ schema_view = get_schema_view(
     permission_classes=[permissions.AllowAny],
 )
 
+router = DefaultRouter()
+router.register(r'users', UserViewSet, basename='user')
+
 urlpatterns = [
     # Root path
     path('', api_root, name='api-root'),
@@ -59,5 +65,8 @@ urlpatterns = [
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0)),
     
     # API endpoints
-    path('api/', include('mentor_mentee_system.apps.users.urls')),
+    path('api/auth/login/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/auth/register/', RegisterView.as_view(), name='register'),
+    path('api/', include(router.urls)),
 ]
