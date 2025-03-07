@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Login Test</h1>
+    
+    <div class="form-group">
+        <label for="endpoint">API Endpoint:</label>
+        <select id="endpoint">
+            <option value="/api/auth/login/">api/auth/login/</option>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label for="email">Email:</label>
+        <input type="email" id="email" value="johndoe@college.edu">
+    </div>
+    
+    <div class="form-group">
+        <label for="password">Password:</label>
+        <input type="password" id="password" value="mentor123">
+    </div>
+    
+    <button onclick="testLogin()">Test Login</button>
+    
+    <div id="result"></div>
+    
+    <script>
+        async function testLogin() {
+            const endpoint = document.getElementById('endpoint').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const resultDiv = document.getElementById('result');
+            
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = 'Testing login...';
+            
+            try {
+                const response = await fetch(`http://localhost:8000${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                let responseText;
+                try {
+                    const data = await response.json();
+                    responseText = JSON.stringify(data, null, 2);
+                } catch (e) {
+                    responseText = await response.text();
+                }
+                
+                resultDiv.innerHTML = `
+                    <p><strong>Status:</strong> ${response.status} ${response.statusText}</p>
+                    <p><strong>Response:</strong></p>
+                    <pre>${responseText}</pre>
+                `;
+                
+                if (response.ok) {
+                    resultDiv.style.backgroundColor = '#dff0d8';
+                    resultDiv.style.borderColor = '#d6e9c6';
+                } else {
+                    resultDiv.style.backgroundColor = '#f2dede';
+                    resultDiv.style.borderColor = '#ebccd1';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <p><strong>Error:</strong></p>
+                    <pre>${error.message}</pre>
+                `;
+                resultDiv.style.backgroundColor = '#f2dede';
+                resultDiv.style.borderColor = '#ebccd1';
+            }
+        }
+    </script>
+</body>
+</html> 

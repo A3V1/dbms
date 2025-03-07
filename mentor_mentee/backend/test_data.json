@@ -1,0 +1,159 @@
+[
+  {
+    "model": "auth.user",
+    "pk": 1,
+    "fields": {
+      "username": "johndoe",
+      "email": "johndoe@college.edu",
+      "password": "pbkdf2_sha256$600000$hashed_password_1",
+      "first_name": "John",
+      "last_name": "Doe",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2024-03-01T10:00:00Z",
+      "official_mail_id": "johndoe@college.edu",
+      "phone_number": "9876543210",
+      "prn_id_no": "PRN1001",
+      "role": "mentor",
+      "profile_picture": null,
+      "calendar_id": "CAL1001"
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 2,
+    "fields": {
+      "username": "alicesmith",
+      "email": "alicesmith@college.edu",
+      "password": "pbkdf2_sha256$600000$hashed_password_2",
+      "first_name": "Alice",
+      "last_name": "Smith",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2024-03-01T10:00:00Z",
+      "official_mail_id": "alicesmith@college.edu",
+      "phone_number": "9123456789",
+      "prn_id_no": "PRN1002",
+      "role": "mentee",
+      "profile_picture": null,
+      "calendar_id": "CAL1002"
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 3,
+    "fields": {
+      "username": "bobjohnson",
+      "email": "bobjohnson@college.edu",
+      "password": "pbkdf2_sha256$600000$hashed_password_3",
+      "first_name": "Bob",
+      "last_name": "Johnson",
+      "is_staff": true,
+      "is_active": true,
+      "is_superuser": true,
+      "date_joined": "2024-03-01T10:00:00Z",
+      "official_mail_id": "bobjohnson@college.edu",
+      "phone_number": "9988776655",
+      "prn_id_no": "PRN1003",
+      "role": "admin",
+      "profile_picture": null,
+      "calendar_id": "CAL1003"
+    }
+  },
+  {
+    "model": "mentor_mentee_system.admin",
+    "pk": 1,
+    "fields": {
+      "user": 3,
+      "privileges": "Full Control"
+    }
+  },
+  {
+    "model": "mentor_mentee_system.mentor",
+    "pk": 1,
+    "fields": {
+      "user": 1,
+      "room_no": "Room 205",
+      "timetable": "Monday-Friday: 10 AM - 4 PM",
+      "department": "Computer Science",
+      "academic_background": "PhD in AI",
+      "post_in_hand": "Professor"
+    }
+  },
+  {
+    "model": "mentor_mentee_system.mentee",
+    "pk": 1,
+    "fields": {
+      "user": 2,
+      "mentor": 1,
+      "course": "B.Tech CSE",
+      "year": 2,
+      "attendance": 89.5,
+      "academic": "Good",
+      "upcoming_event": "AI Workshop",
+      "alternate_contact": "9123456780"
+    }
+  },
+  {
+    "model": "mentor_mentee_system.achievement",
+    "pk": 1,
+    "fields": {
+      "mentor": 1,
+      "mentee": 1,
+      "name": "Top Performer",
+      "description": "Excelled in AI Research",
+      "created_at": "2024-03-01T10:00:00Z",
+      "badge_icon": "badge1.png"
+    }
+  },
+  {
+    "model": "mentor_mentee_system.message",
+    "pk": 1,
+    "fields": {
+      "sender": 1,
+      "receiver": 2,
+      "content": "Keep up the great work!",
+      "is_read": false,
+      "created_at": "2024-03-01T10:00:00Z"
+    }
+  },
+  {
+    "model": "mentor_mentee_system.message",
+    "pk": 2,
+    "fields": {
+      "sender": 2,
+      "receiver": 1,
+      "content": "Thank you for your guidance!",
+      "is_read": false,
+      "created_at": "2024-03-01T11:00:00Z"
+    }
+  },
+  {
+    "model": "mentor_mentee_system.meeting",
+    "pk": 1,
+    "fields": {
+      "mentor": 1,
+      "mentee": 2,
+      "title": "Discuss AI Project",
+      "description": "Bring project documents",
+      "scheduled_at": "2024-03-10T14:00:00Z",
+      "duration": 30,
+      "status": "pending",
+      "created_at": "2024-03-01T10:00:00Z",
+      "updated_at": "2024-03-01T10:00:00Z"
+    }
+  },
+  {
+    "model": "mentor_mentee_system.activitylog",
+    "pk": 1,
+    "fields": {
+      "user": 1,
+      "in_time": "2024-03-01T10:00:00Z",
+      "out_time": "2024-03-01T12:00:00Z",
+      "activity_done": "Checked mentee reports",
+      "key": null
+    }
+  }
+] 

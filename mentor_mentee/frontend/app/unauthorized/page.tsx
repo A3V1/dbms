@@ -1,35 +1,48 @@
 'use client';
 
-import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/context/AuthContext';
+import { Shield, LogOut, Home } from 'lucide-react';
 
 export default function UnauthorizedPage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
-  useEffect(() => {
+  const handleGoToDashboard = () => {
     if (user) {
-      // If user is logged in, redirect to their dashboard after 3 seconds
-      const timer = setTimeout(() => {
-        router.push(`/${user.role}/dashboard`);
-      }, 3000);
-      
-      return () => clearTimeout(timer);
+      router.push(`/dashboard/${user.role}`);
+    } else {
+      router.push('/login');
     }
-  }, [user, router]);
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full space-y-8 p-8">
-        <div className="text-center">
-          <h2 className="text-3xl font-extrabold text-gray-900">
-            Unauthorized Access
-          </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            You don't have permission to access this page. 
-            {user && "Redirecting you to your dashboard..."}
-          </p>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 text-center">
+        <div className="flex justify-center">
+          <Shield className="h-24 w-24 text-red-500" />
+        </div>
+        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          Access Denied
+        </h2>
+        <p className="mt-2 text-center text-sm text-gray-600">
+          You don't have permission to access this page.
+        </p>
+        <div className="mt-8 space-y-4">
+          <button
+            onClick={handleGoToDashboard}
+            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            <Home className="h-5 w-5 mr-2" />
+            Go to Dashboard
+          </button>
+          <button
+            onClick={logout}
+            className="group relative w-full flex justify-center py-2 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            <LogOut className="h-5 w-5 mr-2" />
+            Logout
+          </button>
         </div>
       </div>
     </div>

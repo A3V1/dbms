@@ -1,16 +1,6 @@
 from django.db import models
 from django.conf import settings
-
-class Achievement(models.Model):
-    name = models.CharField(max_length=255, default='Achievement')
-    description = models.TextField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        db_table = 'achievements'
+from mentor_mentee_system.models import Achievement
 
 class UserAchievement(models.Model):
     user = models.ForeignKey(
@@ -20,7 +10,8 @@ class UserAchievement(models.Model):
     )
     achievement = models.ForeignKey(
         Achievement,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        null=True
     )
     awarded_at = models.DateTimeField(auto_now_add=True)
     awarded_by = models.ForeignKey(
@@ -36,4 +27,4 @@ class UserAchievement(models.Model):
         ordering = ['-awarded_at']
 
     def __str__(self):
-        return f"{self.user.email} - {self.achievement.name}"
+        return f"{self.user.email} - {self.achievement.name if self.achievement else 'No achievement'}"

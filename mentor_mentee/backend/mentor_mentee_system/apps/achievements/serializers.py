@@ -1,10 +1,10 @@
 from rest_framework import serializers
-from .models import Achievement, UserAchievement
+from mentor_mentee_system.models import Achievement, UserAchievement
 
 class AchievementSerializer(serializers.ModelSerializer):
     class Meta:
         model = Achievement
-        fields = ['id', 'title', 'description', 'level', 'icon', 'points', 'created_at']
+        fields = ['id', 'name', 'description', 'created_at', 'badge_icon', 'mentor', 'mentee']
         read_only_fields = ['id', 'created_at']
 
 class UserAchievementSerializer(serializers.ModelSerializer):

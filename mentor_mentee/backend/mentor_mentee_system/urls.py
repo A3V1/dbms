@@ -21,7 +21,10 @@ from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework_simplejwt.views import TokenRefreshView
-from .views import RegisterView, UserViewSet, CustomTokenObtainPairView
+from .views import (
+    RegisterView, LoginView, logout, UserViewSet, 
+    get_user_profile, get_mentor_dashboard, test_auth
+)
 from rest_framework.routers import DefaultRouter
 
 # Add a simple root view
@@ -64,9 +67,21 @@ urlpatterns = [
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0)),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0)),
     
-    # API endpoints
-    path('api/auth/login/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    # Authentication URLs
     path('api/auth/register/', RegisterView.as_view(), name='register'),
+    path('api/auth/login/', LoginView.as_view(), name='login'),
+    path('api/auth/logout/', logout, name='logout'),
+    path('api/auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    
+    # User Profile URLs
+    path('api/profile/', get_user_profile, name='user-profile'),
+    
+    # Dashboard URLs
+    path('api/mentor/dashboard/', get_mentor_dashboard, name='mentor-dashboard'),
+    
+    # Test authentication URL
+    path('api/test-auth/', test_auth, name='test-auth'),
+    
+    # Include router URLs
     path('api/', include(router.urls)),
 ]

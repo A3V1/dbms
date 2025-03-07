@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.utils import timezone
 
 class Meeting(models.Model):
     SCHEDULED = 'scheduled'
@@ -22,16 +23,16 @@ class Meeting(models.Model):
         on_delete=models.CASCADE,
         related_name='mentee_meetings'
     )
-    title = models.CharField(max_length=255)
-    description = models.TextField(blank=True)
-    scheduled_at = models.DateTimeField()
-    duration = models.PositiveIntegerField()
+    title = models.CharField(max_length=255, default='Meeting')
+    description = models.TextField(blank=True, null=True)
+    scheduled_at = models.DateTimeField(default=timezone.now)
+    duration = models.PositiveIntegerField(default=30)
     status = models.CharField(
         max_length=10,
         choices=STATUS_CHOICES,
         default=SCHEDULED
     )
-    notes = models.TextField(blank=True)
+    notes = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     

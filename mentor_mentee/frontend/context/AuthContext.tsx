@@ -2,17 +2,8 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { authAPI, type User } from '@/services/api';
 import Cookies from 'js-cookie';
-import { authAPI } from '@/services/api';
-import { jwtDecode } from 'jwt-decode';
-
-interface User {
-  id: number;
-  email: string;
-  role: 'mentor' | 'mentee';
-  first_name: string;
-  last_name: string;
-}
 
 interface AuthContextType {
   user: User | null;
@@ -25,6 +16,26 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Safely access localStorage (only in browser environment)
+const getLocalStorage = (key: string): string | null => {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem(key);
+  }
+  return null;
+};
+
+const setLocalStorage = (key: string, value: string): void => {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(key, value);
+  }
+};
+
+const removeLocalStorage = (key: string): void => {
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem(key);
+  }
+};
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -32,71 +43,92 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    verifyAuth();
-  }, []);
-
-  const verifyAuth = async () => {
-    try {
-      const token = Cookies.get('token');
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-
+    const verifyAuth = async () => {
       try {
-        const decoded = jwtDecode(token);
-        const currentTime = Date.now() / 1000;
-        
-        if (decoded.exp && decoded.exp < currentTime) {
-          Cookies.remove('token');
+        const token = Cookies.get('token') || getLocalStorage('token');
+        if (!token) {
           setLoading(false);
           return;
         }
 
-        // Get user data from token or make API call
-        const response = await authAPI.verifyToken();
-        setUser(response.user);
+        const data = await authAPI.verifyToken();
+        setUser(data.user);
+        
+        // Auto-redirect to appropriate dashboard if on login page
+        if (typeof window !== 'undefined' && window.location.pathname === '/login') {
+          router.push(`/dashboard/${data.user.role}`);
+        }
       } catch (err) {
-        console.error('Token decode error:', err);
+        console.error('Auth verification error:', err);
+        // Clear invalid tokens
         Cookies.remove('token');
+        removeLocalStorage('token');
+        
+        // Only redirect to login if not already there
+        if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+          router.push('/login');
+        }
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error('Auth verification error:', err);
-      Cookies.remove('token');
+    };
+
+    verifyAuth();
+  }, [router]);
+
+  const login = async (email: string, password: string) => {
+    try {
+      setError(null);
+      setLoading(true);
+      
+      const { user: userData } = await authAPI.login(email, password);
+      setUser(userData);
+      
+      // Redirect based on user role
+      switch (userData.role) {
+        case 'admin':
+          router.push('/dashboard/admin');
+          break;
+        case 'mentor':
+          router.push('/dashboard/mentor');
+          break;
+        case 'mentee':
+          router.push('/dashboard/mentee');
+          break;
+        default:
+          throw new Error('Invalid user role');
+      }
+    } catch (err: any) {
+      console.error('Login error:', err);
+      const errorMessage = err.response?.data?.message || 
+                          err.response?.data?.detail || 
+                          err.message ||
+                          'Login failed. Please check your credentials.';
+      setError(errorMessage);
+      throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
-  const login = async (email: string, password: string) => {
+  const logout = async () => {
     try {
-      setError(null);
-      const response = await authAPI.login(email, password);
-      
-      if (response.token && response.user) {
-        Cookies.set('token', response.token);
-        setUser(response.user);
-        
-        // Redirect based on user role
-        if (response.user.role === 'mentor') {
-          router.push('/dashboard/mentor');
-        } else {
-          router.push('/dashboard/mentee');
-        }
-      } else {
-        throw new Error('Invalid response format');
-      }
-    } catch (err: any) {
-      console.error('Login error:', err);
-      setError(err.response?.data?.detail || err.message || 'Login failed');
-      throw err;
+      setLoading(true);
+      await authAPI.logout();
+      setUser(null);
+      router.push('/login');
+    } catch (err) {
+      console.error('Logout error:', err);
+      // Still clear local state even if logout API fails
+      Cookies.remove('token');
+      removeLocalStorage('token');
+      removeLocalStorage('last_login_email');
+      removeLocalStorage('last_login_role');
+      setUser(null);
+      router.push('/login');
+    } finally {
+      setLoading(false);
     }
-  };
-
-  const logout = () => {
-    Cookies.remove('token');
-    setUser(null);
-    router.push('/login');
   };
 
   const value = {
@@ -108,7 +140,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isAuthenticated: !!user,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {loading ? (
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      ) : (
+        children
+      )}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {

@@ -12,7 +12,7 @@ class Message(models.Model):
         on_delete=models.CASCADE,
         related_name='received_messages'
     )
-    content = models.TextField()
+    content = models.TextField(default='')
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -37,9 +37,9 @@ class Notification(models.Model):
         on_delete=models.CASCADE,
         related_name='notifications'
     )
-    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES)
-    title = models.CharField(max_length=200)
-    message = models.TextField()
+    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES, default=MESSAGE)
+    title = models.CharField(max_length=200, default='Notification')
+    message = models.TextField(default='You have a new notification')
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     

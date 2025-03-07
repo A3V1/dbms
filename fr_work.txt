@@ -1,0 +1,106 @@
+### **How the Frontend Should Work**  
+
+Your **Next.js frontend** will interact with the **Django backend** using REST APIs. The frontend will be responsible for user authentication, dashboard views based on roles, and handling data from the backend.
+
+---
+
+## **1. Authentication & Role-Based Access**  
+- **User Login & Registration**  
+  - A user logs in via email & password.  
+  - The backend sends a JWT token stored in HTTP-only cookies.  
+  - The frontend checks the user role (`Admin`, `Mentor`, `Mentee`) and redirects them accordingly.  
+  - Users stay logged in using session-based authentication.
+
+- **Protected Routes**  
+  - The frontend will have protected routes (`/dashboard`, `/meetings`, etc.), restricting access based on user roles.  
+  - If a user is not authenticated, they are redirected to `/login`.
+
+---
+
+## **2. Admin Panel**  
+- **User Management**  
+  - View all users (Admins, Mentors, Mentees).  
+  - Create, edit, delete user accounts.  
+  - Assign mentees to mentors.
+
+- **System Logs & Reports**  
+  - View logs of communications, meeting records, and activity tracking.  
+  - Generate reports on mentee progress.
+
+- **Announcements & Alerts**  
+  - Send system-wide announcements to all users.  
+  - Send emergency alerts to specific users.
+
+---
+
+## **3. Mentor Dashboard**  
+- **Manage Assigned Mentees**  
+  - View a list of assigned mentees with their progress.  
+  - View mentee profiles, grades, attendance, and achievements.  
+
+- **Meeting Management**  
+  - Schedule, reschedule, or cancel meetings.  
+  - View meeting history and upcoming schedules.  
+  - Send automated reminders before meetings.
+
+- **Communication**  
+  - Send messages to assigned mentees.  
+  - Receive messages from mentees.  
+  - Receive notifications for important updates.
+
+- **Achievements & Feedback**  
+  - Award badges and certificates to mentees.  
+  - Provide feedback on assignments and progress.
+
+---
+
+## **4. Mentee Dashboard**  
+- **Track Progress**  
+  - View personal grades, attendance, and achievements.  
+  - Check received badges and certificates.
+
+- **Meeting Requests & Calendar**  
+  - Request a meeting with a mentor.  
+  - View scheduled meetings with details (date, time, mode: online/offline).  
+  - Receive reminders for upcoming meetings.
+
+- **Communication**  
+  - Send messages to assigned mentors.  
+  - Receive feedback on progress and assignments.
+
+- **File Uploads**  
+  - Upload assignments, project reports, and other relevant files.  
+  - View submitted work history.
+
+---
+
+## **5. Communication System**  
+- **One-to-One Messaging**  
+  - Real-time messaging between mentors and mentees.  
+  - Notifications for new messages.
+
+- **Broadcast Announcements**  
+  - Mentors can send announcements to all mentees.  
+  - Admins can send announcements to all users.
+
+- **Emergency Alerts**  
+  - Admins can send urgent notifications to specific users.
+
+---
+
+## **6. Integration with Backend (API Calls)**  
+- Use **Axios** to fetch data from Django backend APIs.  
+- Store authentication tokens in **HTTP-only cookies**.  
+- Use **React Query or SWR** for efficient data fetching.  
+
+---
+
+## **How the Frontend Should Function Step-by-Step**  
+1. **User logs in** → Redirects to their respective dashboard.  
+2. **Mentor Dashboard** → Lists assigned mentees, meetings, and progress tracking.  
+3. **Mentee Dashboard** → Shows personal progress, meeting requests, and mentor communication.  
+4. **Admin Panel** → Manages users, logs, reports, and system settings.  
+5. **Meetings & Communication** → Scheduling, messaging, and reminders are handled dynamically.  
+6. **Role-Based Access** → Unauthorized users cannot access restricted pages.  
+
+This ensures a **smooth user experience** with real-time updates and secure data handling. Let me know if you need specific implementation details! 🚀

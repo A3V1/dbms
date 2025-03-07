@@ -1,0 +1,202 @@
+### Problem Statement for Mentor-Mentee Management System
+
+### **1. Introduction**
+
+In educational institutions, effective mentorship plays a crucial role in student development. A structured mentor-mentee management system is required to streamline communication, track academic progress, schedule meetings, monitor achievements, and ensure the smooth exchange of feedback and resources between mentors and mentees. Additionally, administrators need oversight over all activities for compliance and efficiency.
+
+### **2. Problem Definition**
+
+The current mentorship system faces the following challenges:
+
+1. **Lack of centralized communication** – Mentees and mentors use disparate communication channels, leading to inefficiencies.
+2. **Unstructured tracking of mentee progress** – Academic records, achievements, and attendance are not systematically recorded.
+3. **Difficulty in scheduling and tracking meetings** – Manual scheduling leads to conflicts and mismanagement of meeting agendas.
+4. **Ineffective feedback and emergency handling** – Mentees struggle to provide structured feedback and raise alerts when needed.
+5. **Unorganized mentor assignments** – Assigning and managing multiple mentor-mentee relationships is cumbersome.
+6. **Limited access to logs and records** – Admins lack real-time insights into system usage, communication, and user activity.
+
+### **3. Objectives**
+
+- Develop a database-driven system that streamlines mentor-mentee relationships.
+- Enable structured **one-to-one and broadcast communication** between mentors and mentees.
+- Maintain a **centralized record** of achievements, feedback, meetings, and emergency alerts.
+- Automate meeting scheduling, progress tracking, and **file management** (assignments, projects).
+- Provide **administrative oversight** for monitoring activities, logs, and announcements.
+
+### **4. System Features**
+
+1. **User Role Management**
+    - Each user is assigned one of the following roles: **Admin, Mentor, Mentee**.
+    - Admin has full control over system data and logs.
+2. **Mentor-Mentee Relationship**
+    - A mentor is assigned multiple mentees.
+    - A mentee is assigned to a single mentor.
+3. **Communication System**
+    - One-to-one chat and feedback exchange between mentor and mentee.
+    - Broadcast messages from mentors to multiple mentees.
+    - Emergency alerts sent by mentees to assigned mentors.
+4. **Meeting Management**
+    - Mentors and mentees schedule meetings with time, date, mode (offline/online), and status tracking.
+    - Meeting notes and agendas are stored in the system.
+5. **Achievement and Feedback System**
+    - Mentors award achievements to mentees.
+    - Mentees submit feedback for mentors.
+6. **File and Calendar Integration**
+    - Mentees upload assignments/projects for mentor review.
+    - Mentee calendars sync with the **College Portal** for submission deadlines.
+7. **Activity Logging and Oversight**
+    - Logs track logins, communications, and system interactions for every user.
+    - Admin has exclusive access to all logs.
+8. **System-wide Announcements**
+    - Admin can send global announcements visible to all users.
+
+### **5. Expected Outcome**
+
+A **centralized mentor-mentee management system** that improves mentorship efficiency, ensures seamless 
+communication, and automates tracking of meetings, achievements, and feedback, leading to a **structured
+ and efficient learning environment**.—
+
+
+
+
+database table 
+
+# USER Table
+- name: VARCHAR(255), NOT NULL
+- official_mail_id: VARCHAR(255), UNIQUE, NOT NULL
+- unique_user_no: INT, PRIMARY KEY, NOT NULL, Auto-generated
+- password: VARCHAR(255), NOT NULL, Encrypted storage
+- phone_number: VARCHAR(15), UNIQUE, NOT NULL
+- prn_id_no: VARCHAR(50), UNIQUE, NOT NULL, Assigned by college
+- role: ENUM('admin', 'mentor', 'mentee'), NOT NULL
+- profile_picture: VARCHAR(255), NULL, Image file path
+- created_at: TIMESTAMP, NOT NULL, Current Timestamp
+- calendar_id: VARCHAR(255), UNIQUE, NULL, Calendar reference
+
+# ADMIN Table
+- admin_id: INT, PRIMARY KEY, NOT NULL, Auto-generated
+- privileges: TEXT, NULL, As provided by the Head of Program
+
+# MENTOR Table
+- mentor_id: INT, PRIMARY KEY, NOT NULL, REFERENCES USER(unique_user_no)
+- room_no: VARCHAR(50), NULL
+- timetable: TEXT, NULL, As per provided by the College/Department
+- department: VARCHAR(255), NULL
+- academic_background: TEXT, NULL
+- post_in_hand: VARCHAR(255), NULL
+
+# MENTEE Table
+- mentee_id: INT, PRIMARY KEY, NOT NULL, REFERENCES USER(unique_user_no)
+- mentor_id: INT, FOREIGN KEY, NOT NULL, REFERENCES MENTOR(mentor_id)
+- course: VARCHAR(255), NOT NULL
+- year: INT, NOT NULL
+- attendance: FLOAT, NULL, Percentage
+- academic: TEXT, NULL, As available on the college portal
+- upcoming_event: TEXT, NULL, As provided by the College
+- alternate_contact: VARCHAR(15), UNIQUE, NULL
+
+# ACHIEVEMENT Table
+- achievement_id: INT, PRIMARY KEY, NOT NULL, Auto-Generated
+- mentor_id: INT, FOREIGN KEY, NOT NULL, REFERENCES MENTOR(mentor_id)
+- mentee_id: INT, FOREIGN KEY, NOT NULL, REFERENCES MENTEE(mentee_id)
+- title: VARCHAR(255), NOT NULL
+- description: TEXT, NULL
+- date_awarded: TIMESTAMP, NULL
+- badge_icon: VARCHAR(255), NULL, Image file path
+
+# COMMUNICATION Table
+- comm_id: INT, PRIMARY KEY, NOT NULL, AUTO_INCREMENT
+- sender_id: INT, FOREIGN KEY, NOT NULL, REFERENCES USER(unique_user_no)
+- receiver_id: INT, FOREIGN KEY, NOT NULL, REFERENCES USER(unique_user_no)
+- message_content: TEXT, NULL
+- message_status: ENUM('sent', 'delivered', 'read'), NULL
+- attached_file: VARCHAR(255), NULL, File path
+- timestamp: TIMESTAMP, NOT NULL, DEFAULT CURRENT_TIMESTAMP
+- type: ENUM('one-to-one', 'broadcast', 'feedback', 'meeting_req'), NOT NULL
+- emergency_alert_id: INT, FOREIGN KEY, NULL, REFERENCES COMMUNICATION(comm_id)
+- alert_reason: TEXT, NULL
+- alert_status: ENUM('pending', 'resolved'), NULL
+- meeting_date: DATE, NULL
+- meeting_time: TIME, NULL
+- meeting_mode: ENUM('offline', 'online'), NULL
+- meeting_status: ENUM('scheduled', 'completed', 'cancelled'), NULL
+- meeting_agenda: TEXT, NULL
+- notes: TEXT, NULL
+
+# ACTIVITY LOG Table
+- activity_id: INT, PRIMARY KEY, NOT NULL, Auto-Generated
+- user_id: INT, FOREIGN KEY, NOT NULL, REFERENCES USER(unique_user_no)
+- in_time: TIMESTAMP, NOT NULL
+- out_time: TIMESTAMP, NULL
+- activity_done: TEXT, NULL, As per tracked down
+- key: VARCHAR(50), NULL
+
+
+sample data 
+
+- Insert sample users (Mentors, Mentees, Admins)
+INSERT INTO USER (name, official_mail_id, unique_user_no, password, phone_number, prn_id_no, role, profile_picture, created_at, calendar_id)
+VALUES
+('John Doe', 'johndoe@college.edu', 1001, 'hashed_password_1', '9876543210', 'PRN1001', 'mentor', NULL, CURRENT_TIMESTAMP, 'CAL1001'),
+('Alice Smith', 'alicesmith@college.edu', 1002, 'hashed_password_2', '9123456789', 'PRN1002', 'mentee', NULL, CURRENT_TIMESTAMP, 'CAL1002'),
+('Bob Johnson', 'bobjohnson@college.edu', 1003, 'hashed_password_3', '9988776655', 'PRN1003', 'admin', NULL, CURRENT_TIMESTAMP, 'CAL1003'),
+('Emma Davis', 'emmadavis@college.edu', 1004, 'hashed_password_4', '9112233445', 'PRN1004', 'mentor', NULL, CURRENT_TIMESTAMP, 'CAL1004'),
+('Charlie Brown', 'charliebrown@college.edu', 1005, 'hashed_password_5', '9556677889', 'PRN1005', 'mentee', NULL, CURRENT_TIMESTAMP, 'CAL1005'),
+('Sophia Wilson', 'sophiawilson@college.edu', 1006, 'hashed_password_6', '9667788990', 'PRN1006', 'mentor', NULL, CURRENT_TIMESTAMP, 'CAL1006'),
+('David Lee', 'davidlee@college.edu', 1007, 'hashed_password_7', '9445566778', 'PRN1007', 'mentee', NULL, CURRENT_TIMESTAMP, 'CAL1007');
+- - Insert sample admin
+INSERT INTO ADMIN (admin_id, privilege)
+VALUES
+(1, 'Full Control'),
+(2, 'Read-Only Access');
+- - Insert sample mentors
+INSERT INTO MENTOR (mentor_id, room_no, timetable, department, academic_background, post_in_hand)
+VALUES
+(1001, 'Room 205', 'Monday-Friday: 10 AM - 4 PM', 'Computer Science', 'PhD in AI', 'Professor'),
+(1004, 'Room 210', 'Monday-Friday: 9 AM - 5 PM', 'Electronics', 'M.Tech in Embedded Systems', 'Assistant Professor'),
+(1006, 'Room 315', 'Monday-Friday: 11 AM - 6 PM', 'Mechanical', 'PhD in Robotics', 'Senior Lecturer');
+- - Insert sample mentees
+INSERT INTO MENTEE (mentee_id, mentor_id, course, year, stdhscnc, academic, upcoming_event, alternate_contact)
+VALUES
+(2001, 1001, 'B.Tech CSE', 2, 89.5, 'Good', 'AI Workshop', '9123456780'),
+(2002, 1001, 'B.Tech CSE', 3, 75.0, 'Average', 'Hackathon', '9876543211'),
+(2003, 1004, 'B.Tech ECE', 2, 81.0, 'Excellent', 'Robotics Club Meetup', '9234567890'),
+(2004, 1004, 'B.Tech ECE', 4, 72.5, 'Good', 'IEEE Paper Submission', '9654321876'),
+(2005, 1006, 'B.Tech Mechanical', 1, 77.0, 'Average', 'Automobile Expo', '9776655443');
+- - Insert sample achievements
+INSERT INTO ACHIEVEMENT (achievement_id, mentor_id, mentee_id, title, description, date_awarded, badge_icon)
+VALUES
+(3001, 1001, 2001, 'Top Performer', 'Excelled in AI Research', '2024-03-01', 'badge1.png'),
+(3002, 1001, 2002, 'Hackathon Finalist', 'Secured 2nd place in inter-college hackathon', '2024-03-15', 'badge2.png'),
+(3003, 1004, 2003, 'Best Presentation', 'Outstanding presentation at Robotics Club', '2024-02-20', 'badge3.png'),
+(3004, 1004, 2004, 'Publication Award', 'Published research in IEEE Journal', '2024-02-28', 'badge4.png'),
+(3005, 1006, 2005, 'Automobile Design Award', 'Designed an innovative vehicle prototype', '2024-03-10', 'badge5.png');
+- - Insert sample communication records
+INSERT INTO COMMUNICATION (comm_id, sender_id, receiver_id, message_content, message_status, attached_file, timestamp, type)
+VALUES
+(4001, 1001, 2001, 'Keep up the great work!', 'delivered', NULL, CURRENT_TIMESTAMP, 'one-to-one'),
+(4002, 1001, 2002, 'Reminder: Hackathon registration ends soon.', 'sent', NULL, CURRENT_TIMESTAMP, 'broadcast'),
+(4003, 1004, 2003, 'Your project report needs more details.', 'delivered', 'report.pdf', CURRENT_TIMESTAMP, 'feedback'),
+(4004, 1004, 2004, 'Don’t forget the IEEE submission deadline.', 'read', NULL, CURRENT_TIMESTAMP, 'broadcast'),
+(4005, 1006, 2005, 'Let’s discuss your prototype improvements.', 'sent', NULL, CURRENT_TIMESTAMP, 'meeting_req');
+- - Insert sample emergency alerts
+INSERT INTO EMERGENCY_ALERT (alert_id, comm_id, alert_reason, alert_status)
+VALUES
+(5001, 4001, 'Mentee facing academic stress', 'pending'),
+(5002, 4003, 'Mentee needs urgent guidance on research paper', 'resolved');
+- - Insert sample meeting records
+INSERT INTO MEETING (meeting_id, mentor_id, mentee_id, meeting_date, meeting_time, meeting_mode, meeting_status, meeting_agenda, notes)
+VALUES
+(6001, 1001, 2001, '2024-03-10', '14:00', 'offline', 'scheduled', 'Discuss AI Project', 'Bring project documents'),
+(6002, 1001, 2002, '2024-03-15', '16:00', 'online', 'scheduled', 'Career Guidance', 'Join via Zoom'),
+(6003, 1004, 2003, '2024-03-18', '10:30', 'offline', 'scheduled', 'Robotics Competition Preparation', 'Check latest design drafts'),
+(6004, 1004, 2004, '2024-03-20', '12:00', 'online', 'completed', 'IEEE Paper Review', 'Discussed last-minute edits'),
+(6005, 1006, 2005, '2024-03-22', '15:00', 'offline', 'cancelled', 'Automobile Design Consultation', 'Rescheduled for next week');
+- - Insert sample activity logs
+INSERT INTO ACTIVITY_LOG (activity_id, user_id, in_time, out_time, activity_done, ip_address, last_login)
+VALUES
+(7001, 1001, '2024-03-01 10:00:00', '2024-03-01 12:00:00', 'Checked mentee reports', '192.168.1.1', '2024-02-28 09:00:00'),
+(7002, 2001, '2024-03-02 11:00:00', '2024-03-02 13:00:00', 'Submitted assignment', '192.168.1.2', '2024-03-01 10:30:00'),
+(7003, 2003, '2024-03-05 09:30:00', '2024-03-05 11:30:00', 'Uploaded project proposal', '192.168.1.3', '2024-03-04 08:45:00');
+
+
